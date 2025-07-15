@@ -1,0 +1,15 @@
+import { VerticalBox, HorizontalBox, Button } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    in property <string> window_title;
+    min-width: 600px;
+    max-width: 600px;
+    min-height: 550px;
+    max-height: 550px;
+    title: window_title;
+    default-font-size: 16px;
+    background: #1a1a1a;
+    no-frame: false;
+    always-on-top: true;
+    icon: @image-url("assets/icon.png");
+}
