@@ -1,15 +1,323 @@
-import { VerticalBox, HorizontalBox, Button } from "std-widgets.slint";
+import { VerticalBox, HorizontalBox, Button, ComboBox } from "std-widgets.slint";
+
+import { ComboBox } from "std-widgets.slint";
+export component MapsComboBox inherits Window {
+    background: transparent;
+    ComboBox {
+        x: 15px;
+        y: 5px;
+        width: 300px;
+        model: [
+            "Aerowalk",
+            "Battleforged",
+            "Bloodrun",
+            "Campgrounds",
+            "Cure",
+            "Dismemberment",
+            "Elder",
+            "Furious Heights",
+            "Hektik",
+            "House of Decay",
+            "Lost World",
+            "Silence",
+            "Sinister",
+            "Toxicity",
+            "Vertical Vengeance"
+        ];
+        current-index: 2; // Default to "Bloodrun"
+    }
+}
+
+export component ItemView inherits Window {
+    width: 250px;
+    height: 300px;
+    background: item_background_color;
+    in property <color> background_color: #fff;
+    in property <string> item_name_short: "";
+    in property <string> item_name: "";
+    in-out property <bool> is_active: false;
+    in-out property <bool> is_warning: false;
+    in-out property <bool> is_critical: false;
+    in-out property <int> timer;
+    in property <string> item_hotkey: "1";
+    in property <color> item_background_color: #303030;
+    
+    // Callbacks
+    callback start_item_timer();
+    callback reset_item_timer();
+    
+    // Layout
+    Rectangle {
+        border-radius: 10px;
+        border-width: 2px;
+        border-color: #ff6b35;
+        background: is_critical ? #ff4444 : (is_warning ? #ffaa44 : #303030);
+        VerticalBox {
+            alignment: center;
+            spacing: 15px;
+            HorizontalBox {
+                Rectangle {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 30px;
+                    background: background_color;
+                    VerticalBox {
+                        Rectangle {
+                            background: background_color;
+                            border-radius: 30px;
+                            Text {
+                                text: item_name_short;
+                                font-size: 20px;
+                                font-weight: 700;
+                                color: #000000;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: item_name;
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #ffffff;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            Text {
+                padding: 50px;
+                text: is_active ? timer + "s" : "Ready";
+                font-size: 32px;
+                font-weight: 700;
+                color: is_active ? #ffffff : #00ff00;
+                horizontal-alignment: center;
+            }
+
+            HorizontalBox {
+                spacing: 10px;
+                alignment: center;
+                Button {
+                    width: 80px;
+                    text: "Start";
+                    enabled: !is_active;
+                    clicked => {
+                        is_active = true;
+                        start_item_timer(); // Call start callback
+                    }
+                }
+
+                Button {
+                    width: 80px;
+                    text: "Reset";
+                    enabled: is_active;
+                    clicked => {
+                        is_active = false;
+                        reset_item_timer(); // Call reset callback
+                    }
+                }
+            }
+
+            Text {
+                text: "Press " + item_hotkey + " button to start timer";
+                font-size: 14px;
+                font-weight: 400;
+                color: #a19a9a;
+                horizontal-alignment: center;
+            }
+        }
+    }
+}
 
 export component AppWindow inherits Window {
     in property <string> window_title;
-    min-width: 600px;
-    max-width: 600px;
-    min-height: 550px;
-    max-height: 550px;
+    min-width: 700px;
+    max-width: 700px;
+    min-height: 980px;
+    max-height: 980px;
     title: window_title;
     default-font-size: 16px;
     background: #1a1a1a;
     no-frame: false;
     always-on-top: true;
     icon: @image-url("assets/icon.png");
+    in-out property <bool> is_megahelth_active;
+    in-out property <bool> is_red_armor_active;
+    in-out property <int> megahealth_timer;
+    in-out property <bool> is_megahealth_warning: false;
+    in-out property <bool> is_megahealth_critical: false;
+    in-out property <bool> is_red_armor_warning: false;
+    in-out property <bool> is_red_armor_critical: false;
+    in-out property <int> red_armor_timer;
+    callback start_megahealth_timer();
+    callback reset_megahealth_timer();
+    callback start_red_armor_timer();
+    callback reset_red_armor_timer();
+    VerticalBox {
+        padding: 20px;
+        spacing: 20px;
+        HorizontalBox {
+            width: 100%;
+            spacing: 10px;
+            Image {
+                source: @image-url("assets/ql.png");
+                width: 150px;
+                height: 150px;
+            }
+
+            VerticalBox {
+                width: 100%;
+                Text {
+                    text: "QuakeLive Tools";
+                    font-size: 56px;
+                    font-weight: 700;
+                    color: #ff0000;
+                }
+
+                Text {
+                    text: "by AktiveHateXXX";
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: #ff6b35;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        VerticalBox {
+            spacing: 0px;
+            Text {
+                text: "Timers";
+                font-size: 24px;
+                font-weight: 700;
+                color: #ffffff;
+            }
+
+            HorizontalBox {
+                width: 100%;
+                alignment: space-between;
+                ItemView {
+                    item_name_short: "MH";
+                    item_name: "Mega Health";
+                    background_color: #00ff00;
+                    is_active: is_megahelth_active;
+                    is_critical: is_megahealth_critical;
+                    is_warning: is_megahealth_warning;
+                    item_hotkey: "1";
+                    item_background_color: #303030;
+                    width: 300px;
+                    timer: megahealth_timer;
+                    start_item_timer => {
+                        start_megahealth_timer(); // Call start callback
+                    }
+                    reset_item_timer => {
+                        reset_megahealth_timer(); // Call reset callback
+                    }
+                }
+
+                ItemView {
+                    item_name_short: "RA";
+                    item_name: "Red Armor";
+                    background_color: #ff0000;
+                    is_active: is_red_armor_active;
+                    is_critical: is_red_armor_critical;
+                    is_warning: is_red_armor_warning;
+                    item_hotkey: "2";
+                    item_background_color: #303030;
+                    timer: red_armor_timer;
+                    width: 300px;
+                    start_item_timer => {
+                        start_red_armor_timer(); // Call start callback
+                    }
+                    reset_item_timer => {
+                        reset_red_armor_timer(); // Call reset callback
+                    }
+                }
+            }
+        }
+
+        VerticalBox {
+            spacing: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-bottom: 15px;
+            width: 100%;
+            Text {
+                text: "Timing table";
+                font-size: 24px;
+                font-weight: 700;
+                color: #ffffff;
+            }
+
+            Rectangle {
+                width: 100%;
+                height: 300px;
+                border-radius: 10px;
+                border-width: 2px;
+                border-color: #ff6b35;
+                background: #303030;
+                VerticalBox {
+                    alignment: center;
+                    spacing: 30px;
+                    padding-left: 20px;
+                    padding-right: 20px;
+                    padding-top: 15px;
+                    padding-bottom: 15px;
+                    VerticalBox {
+                        spacing: 10px;
+                        alignment: center;
+                        Text {
+                            text: "Mega Health:";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                        }
+
+                        Text {
+                            text: "0 - 35 | 5 - 40 | 10 - 45 | 15 - 50 | 20 - 55 | 25 - 60";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                        }
+
+                        Text {
+                            text: "30 - 5 | 35 - 10 | 40 - 15 | 45 - 20 | 50 - 25 | 55 - 30";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                            horizontal-alignment: right;
+                        }
+                    }
+
+                    VerticalBox {
+                        spacing: 10px;
+                        alignment: center;
+                        Text {
+                            text: "Red/Yellow Armor:";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                        }
+
+                        Text {
+                            text: "0 - 25 | 5 - 30 | 10 - 35 | 15 - 40 | 20 - 45 | 25 - 50";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                        }
+
+                        Text {
+                            text: "30 - 55 | 35 - 60 | 40 - 5 | 45 - 10 | 50 - 15 | 55 - 20";
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                            horizontal-alignment: right;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
